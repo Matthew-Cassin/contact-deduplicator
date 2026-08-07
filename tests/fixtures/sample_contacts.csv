@@ -1,0 +1,6 @@
+name,email,phone,company,address
+John Smith,john@example.com,555-0123,Acme Corp,123 Main St
+John Smith,john@example.com,(555) 555-0123,Acme,123 Main Street
+Jane Doe,jane@example.com,555-0456,TechCorp,456 Oak Ave
+J. Doe,jane.doe@example.com,555-0456,Tech Corp,456 Oak Avenue
+Bob Johnson,bob@example.com,555-0789,Global Inc,789 Pine Rd
