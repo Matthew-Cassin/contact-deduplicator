@@ -5,7 +5,6 @@ setup(
     version="0.1.0",
     description="A Python tool for detecting and merging duplicate contact records.",
     author="Matt",
-    author_email="m.cassin93@hotmail.com",
     license="MIT",
     package_dir={"": "src"},
     packages=find_packages(where="src"),
