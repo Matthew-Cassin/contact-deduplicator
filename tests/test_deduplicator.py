@@ -105,7 +105,7 @@ class TestLoadCsv:
 
     def test_no_recognizable_columns_raises_deduplication_error(self, deduplicator, tmp_path):
         path = write_csv(tmp_path, "foo,bar\n1,2\n")
-        with pytest.raises(DeduplicationError, match="[Nn]o recognizable"):
+        with pytest.raises(DeduplicationError, match=r"[Nn]o recognizable"):
             deduplicator.load_csv(path)
 
 

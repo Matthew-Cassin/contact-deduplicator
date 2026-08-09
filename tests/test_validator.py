@@ -38,17 +38,17 @@ class TestContactValidatorValidContacts:
         assert errors == []
 
     def test_valid_international_phone(self, validator):
-        is_valid, errors = validator.validate_contact(
+        is_valid, _errors = validator.validate_contact(
             make_contact(name="Jane Doe", phone="+442070313000")
         )
         assert is_valid is True
 
     def test_name_exactly_at_minimum_length(self, validator):
-        is_valid, errors = validator.validate_contact(make_contact(name="Bob"))  # 3 chars
+        is_valid, _errors = validator.validate_contact(make_contact(name="Bob"))  # 3 chars
         assert is_valid is True
 
     def test_name_exactly_at_maximum_length(self, validator):
-        is_valid, errors = validator.validate_contact(make_contact(name="A" * 100))
+        is_valid, _errors = validator.validate_contact(make_contact(name="A" * 100))
         assert is_valid is True
 
 
@@ -61,7 +61,7 @@ class TestContactValidatorInvalidFields:
         assert any("name" in e.lower() for e in errors)
 
     def test_empty_string_name_is_invalid(self, validator):
-        is_valid, errors = validator.validate_contact(make_contact(name="   "))
+        is_valid, _errors = validator.validate_contact(make_contact(name="   "))
         assert is_valid is False
 
     def test_name_too_short_is_invalid(self, validator):
@@ -70,7 +70,7 @@ class TestContactValidatorInvalidFields:
         assert "3" in errors[0] and "100" in errors[0]
 
     def test_name_too_long_is_invalid(self, validator):
-        is_valid, errors = validator.validate_contact(make_contact(name="A" * 101))
+        is_valid, _errors = validator.validate_contact(make_contact(name="A" * 101))
         assert is_valid is False
 
     def test_invalid_email_format(self, validator):
@@ -96,7 +96,7 @@ class TestContactValidatorInvalidFields:
         assert any("address" in e.lower() for e in errors)
 
     def test_company_none_is_not_an_error(self, validator):
-        is_valid, errors = validator.validate_contact(make_contact(company=None))
+        is_valid, _errors = validator.validate_contact(make_contact(company=None))
         assert is_valid is True
 
 

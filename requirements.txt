@@ -1,5 +1,0 @@
-pandas==3.0.5
-click==8.4.2
-fuzzywuzzy==0.18.0
-python-Levenshtein==0.27.3
-email-phone-validator @ git+https://github.com/Matthew-Cassin/email-phone-validator.git@v0.1.0

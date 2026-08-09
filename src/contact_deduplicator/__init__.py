@@ -32,19 +32,25 @@ Example:
 
 from .deduplicator import ContactDeduplicator
 from .matcher import ContactMatcher
-from .models import Contact, DeduplicationError, DeduplicationResult, MergeAction, MergeReport
+from .models import (
+    Contact,
+    DeduplicationError,
+    DeduplicationResult,
+    MergeAction,
+    MergeReport,
+)
 from .validator import ContactValidator
 
-__version__ = "0.1.0"
+__version__ = "1.0.0"
 
 __all__ = [
-    "ContactDeduplicator",
-    "DeduplicationResult",
-    "MergeReport",
-    "DeduplicationError",
     "Contact",
-    "MergeAction",
-    "ContactValidator",
+    "ContactDeduplicator",
     "ContactMatcher",
+    "ContactValidator",
+    "DeduplicationError",
+    "DeduplicationResult",
+    "MergeAction",
+    "MergeReport",
     "__version__",
 ]

@@ -126,7 +126,7 @@ class TestFuzzyNameMatch:
 
     def test_custom_lower_threshold_allows_the_same_pair_to_match(self):
         loose_matcher = ContactMatcher(name_threshold=0.70)
-        is_match, score = loose_matcher.fuzzy_name_match(
+        is_match, _score = loose_matcher.fuzzy_name_match(
             make_contact(name="Jane Doe"), make_contact(name="J. Doe")
         )
         assert is_match is True

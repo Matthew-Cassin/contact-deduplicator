@@ -11,11 +11,9 @@ into duplicate-group detection.
 from __future__ import annotations
 
 import re
-from typing import Dict, Optional, Tuple
-
-from fuzzywuzzy import fuzz
 
 from email_phone_validator import PhoneValidator
+from fuzzywuzzy import fuzz
 
 from .models import Contact
 
@@ -30,11 +28,11 @@ _TRACKED_FIELDS = ("name", "email", "phone", "company", "address")
 
 
 def calculate_completeness(
-    name: Optional[str],
-    email: Optional[str],
-    phone: Optional[str],
-    company: Optional[str],
-    address: Optional[str],
+    name: str | None,
+    email: str | None,
+    phone: str | None,
+    company: str | None,
+    address: str | None,
 ) -> float:
     """Compute a completeness score from raw field values.
 
@@ -89,7 +87,7 @@ class ContactMatcher:
         # full libphonenumber parse, which is cheap once but adds up
         # across n^2 comparisons -- caching by raw string (a pure
         # function of its input) turns that back into O(n) real work.
-        self._phone_normalization_cache: Dict[str, Optional[str]] = {}
+        self._phone_normalization_cache: dict[str, str | None] = {}
 
     def exact_email_match(self, contact1: Contact, contact2: Contact) -> bool:
         """Compare two contacts' emails after normalization.
@@ -137,7 +135,7 @@ class ContactMatcher:
             return False
         return normalized1 == normalized2
 
-    def _normalize_phone(self, raw: str) -> Optional[str]:
+    def _normalize_phone(self, raw: str) -> str | None:
         """Normalize a raw phone string for comparison, with caching.
 
         Args:
@@ -155,7 +153,7 @@ class ContactMatcher:
 
         result = self._phone_validator.validate(raw)
         if result.is_valid and result.formatted:
-            normalized: Optional[str] = result.formatted
+            normalized: str | None = result.formatted
         else:
             digits = re.sub(r"\D", "", raw)
             normalized = digits or None
@@ -165,7 +163,7 @@ class ContactMatcher:
 
     def fuzzy_name_match(
         self, contact1: Contact, contact2: Contact
-    ) -> Tuple[bool, float]:
+    ) -> tuple[bool, float]:
         """Compare two contacts' names by similarity score.
 
         Args:
