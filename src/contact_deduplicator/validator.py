@@ -10,8 +10,6 @@ boundary between "invalid data" and "couldn't even attempt this."
 
 from __future__ import annotations
 
-from typing import List, Tuple
-
 from email_phone_validator import EmailValidator, PhoneValidator
 
 from .logger import get_logger
@@ -53,7 +51,7 @@ class ContactValidator:
         self.email_validator = email_validator
         self.phone_validator = phone_validator
 
-    def validate_contact(self, contact: Contact) -> Tuple[bool, List[str]]:
+    def validate_contact(self, contact: Contact) -> tuple[bool, list[str]]:
         """Validate every field of a contact.
 
         Args:
@@ -64,7 +62,7 @@ class ContactValidator:
             if every present field passed its checks; ``errors`` lists
             every problem found (empty when ``is_valid`` is ``True``).
         """
-        errors: List[str] = []
+        errors: list[str] = []
 
         errors.extend(self._validate_name(contact.name))
         errors.extend(self._validate_email(contact.email))
@@ -80,19 +78,21 @@ class ContactValidator:
 
         return is_valid, errors
 
-    def _validate_name(self, name: object) -> List[str]:
+    def _validate_name(self, name: object) -> list[str]:
         """Validate the ``name`` field: required, 3-100 characters."""
         if not name or not str(name).strip():
             return ["Name is missing or empty"]
         length = len(str(name).strip())
         if length < _MIN_NAME_LENGTH or length > _MAX_NAME_LENGTH:
             return [
-                f"Name length must be between {_MIN_NAME_LENGTH} and "
-                f"{_MAX_NAME_LENGTH} characters, got {length}"
+                (
+                    f"Name length must be between {_MIN_NAME_LENGTH} and "
+                    f"{_MAX_NAME_LENGTH} characters, got {length}"
+                )
             ]
         return []
 
-    def _validate_email(self, email: object) -> List[str]:
+    def _validate_email(self, email: object) -> list[str]:
         """Validate the ``email`` field via :class:`EmailValidator`, if present."""
         if not email:
             return []
@@ -101,7 +101,7 @@ class ContactValidator:
             return []
         return [f"Invalid email: {'; '.join(result.errors) or 'unknown error'}"]
 
-    def _validate_phone(self, phone: object) -> List[str]:
+    def _validate_phone(self, phone: object) -> list[str]:
         """Validate the ``phone`` field via :class:`PhoneValidator`, if present."""
         if not phone:
             return []
@@ -110,7 +110,7 @@ class ContactValidator:
             return []
         return [f"Invalid phone: {'; '.join(result.errors) or 'unknown error'}"]
 
-    def _validate_optional_text(self, field_name: str, value: object) -> List[str]:
+    def _validate_optional_text(self, field_name: str, value: object) -> list[str]:
         """Validate an optional free-text field: not empty/whitespace-only if present."""
         if value is None:
             return []

@@ -11,28 +11,32 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
 
 import pandas as pd
-
 from email_phone_validator import EmailValidator, PhoneValidator
 
 from .logger import get_logger
 from .matcher import ContactMatcher, calculate_completeness
-from .models import Contact, DeduplicationError, DeduplicationResult, MergeAction, MergeReport
+from .models import (
+    Contact,
+    DeduplicationError,
+    DeduplicationResult,
+    MergeAction,
+    MergeReport,
+)
 from .validator import ContactValidator
 
 logger = get_logger("deduplicator")
 
 __all__ = ["ContactDeduplicator"]
 
-_TRACKED_FIELDS: Tuple[str, ...] = ("name", "email", "phone", "company", "address")
+_TRACKED_FIELDS: tuple[str, ...] = ("name", "email", "phone", "company", "address")
 
 # Column-header aliases for auto-detection during load_csv, matched
 # case-insensitively after stripping whitespace. Not exhaustive -- a
 # short, common-sense list rather than an attempt to cover every
 # possible header a source system might use.
-_COLUMN_ALIASES: Dict[str, Tuple[str, ...]] = {
+_COLUMN_ALIASES: dict[str, tuple[str, ...]] = {
     "name": ("name", "full name", "fullname", "contact name", "contact"),
     "email": ("email", "e-mail", "email address", "emailaddress"),
     "phone": ("phone", "phone number", "phonenumber", "telephone", "tel", "mobile", "cell"),
@@ -89,13 +93,13 @@ class ContactDeduplicator:
         self.name_similarity_threshold = name_similarity_threshold
         self.skip_validation = skip_validation
         self._matcher = ContactMatcher(name_threshold=name_similarity_threshold)
-        self._validator: Optional[ContactValidator] = None
+        self._validator: ContactValidator | None = None
         if not skip_validation:
             self._validator = ContactValidator(EmailValidator(check_mx=False), PhoneValidator())
 
     # -- Loading ------------------------------------------------------
 
-    def load_csv(self, filepath: str) -> List[Contact]:
+    def load_csv(self, filepath: str) -> list[Contact]:
         """Load contacts from a CSV file.
 
         Column names are matched case-insensitively against a short list
@@ -142,9 +146,9 @@ class ContactDeduplicator:
         rename_map = {source: field for field, source in column_map.items() if source}
         frame = frame[list(detected_columns)].rename(columns=rename_map)
 
-        contacts: List[Contact] = []
-        for row_index, row in enumerate(frame.itertuples(index=False), start=1):
-            raw = row._asdict()
+        contacts: list[Contact] = []
+        records = frame.to_dict(orient="records")
+        for row_index, raw in enumerate(records, start=1):
             values = {
                 field_name: self._normalize_field(field_name, raw.get(field_name, ""))
                 for field_name in _TRACKED_FIELDS
@@ -155,7 +159,7 @@ class ContactDeduplicator:
         logger.info("Loaded %d contact(s) from %s", len(contacts), filepath)
         return contacts
 
-    def _detect_columns(self, columns: List[str]) -> Dict[str, Optional[str]]:
+    def _detect_columns(self, columns: list[str]) -> dict[str, str | None]:
         """Map each canonical field to a matching source column, if any.
 
         Args:
@@ -167,13 +171,13 @@ class ContactDeduplicator:
             ``None`` if none of that field's aliases were found.
         """
         available = {col.strip().lower(): col for col in columns}
-        result: Dict[str, Optional[str]] = {}
+        result: dict[str, str | None] = {}
         for field_name, aliases in _COLUMN_ALIASES.items():
             match = next((available[alias] for alias in aliases if alias in available), None)
             result[field_name] = match
         return result
 
-    def _normalize_field(self, field_name: str, raw_value: str) -> Optional[str]:
+    def _normalize_field(self, field_name: str, raw_value: str) -> str | None:
         """Strip whitespace, lowercase email/phone, and blank out empty values."""
         value = (raw_value or "").strip()
         if not value:
@@ -184,7 +188,7 @@ class ContactDeduplicator:
 
     # -- Matching -------------------------------------------------------
 
-    def find_duplicates(self, contacts: List[Contact]) -> List[List[Contact]]:
+    def find_duplicates(self, contacts: list[Contact]) -> list[list[Contact]]:
         """Group contacts that are duplicates of each other.
 
         Every pair of contacts is compared by exact email, then exact
@@ -235,13 +239,13 @@ class ContactDeduplicator:
                 if self._pair_reason(contacts[i], contacts[j])[1] >= 0:
                     union(i, j)
 
-        groups: Dict[int, List[Contact]] = {}
+        groups: dict[int, list[Contact]] = {}
         for index in range(count):
             groups.setdefault(find_root(index), []).append(contacts[index])
 
         return [group for group in groups.values() if len(group) > 1]
 
-    def _pair_reason(self, contact1: Contact, contact2: Contact) -> Tuple[str, int]:
+    def _pair_reason(self, contact1: Contact, contact2: Contact) -> tuple[str, int]:
         """The match reason and priority for one pair of contacts.
 
         Returns:
@@ -258,7 +262,7 @@ class ContactDeduplicator:
             return f"fuzzy_name_{round(score * 100)}%", _FUZZY_NAME_PRIORITY
         return "", -1
 
-    def _group_reason(self, group: List[Contact]) -> str:
+    def _group_reason(self, group: list[Contact]) -> str:
         """The single strongest match reason found anywhere within a group.
 
         Groups can form transitively (see :meth:`find_duplicates`), so
@@ -276,13 +280,13 @@ class ContactDeduplicator:
                     return best_reason
         return best_reason or "unknown"
 
-    def _pick_primary(self, group: List[Contact]) -> Contact:
+    def _pick_primary(self, group: list[Contact]) -> Contact:
         """The most complete contact in a group (ties go to the earliest)."""
         return max(group, key=lambda contact: contact.completeness_score)
 
     # -- Merging ----------------------------------------------------------
 
-    def merge_contacts(self, duplicate_group: List[Contact]) -> Contact:
+    def merge_contacts(self, duplicate_group: list[Contact]) -> Contact:
         """Merge a group of duplicate contacts into a single best contact.
 
         For each field, the longest non-null value among the group wins
@@ -309,7 +313,7 @@ class ContactDeduplicator:
         if len(duplicate_group) == 1:
             return duplicate_group[0]
 
-        merged_values: Dict[str, Optional[str]] = {}
+        merged_values: dict[str, str | None] = {}
         for field_name in _TRACKED_FIELDS:
             candidates = [
                 getattr(contact, field_name)
@@ -324,7 +328,7 @@ class ContactDeduplicator:
 
     # -- Orchestration ------------------------------------------------
 
-    def deduplicate(self, contacts: List[Contact]) -> DeduplicationResult:
+    def deduplicate(self, contacts: list[Contact]) -> DeduplicationResult:
         """Run the full deduplication workflow: validate, group, merge.
 
         Args:
@@ -344,7 +348,7 @@ class ContactDeduplicator:
             raise DeduplicationError(f"contacts must be a list, got {type(contacts).__name__}")
 
         total = len(contacts)
-        errors: List[str] = []
+        errors: list[str] = []
         if self._validator is not None:
             for contact in contacts:
                 is_valid, contact_errors = self._validator.validate_contact(contact)
@@ -364,8 +368,8 @@ class ContactDeduplicator:
         groups = self.find_duplicates(contacts)
         grouped_ids = {contact.id for group in groups for contact in group}
 
-        deduplicated: List[Contact] = []
-        merge_actions: List[MergeAction] = []
+        deduplicated: list[Contact] = []
+        merge_actions: list[MergeAction] = []
         for group in groups:
             merged = self.merge_contacts(group)
             primary = self._pick_primary(group)

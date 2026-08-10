@@ -11,14 +11,14 @@ from __future__ import annotations
 
 from dataclasses import asdict, dataclass, field
 from datetime import datetime, timezone
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 __all__ = [
     "Contact",
-    "MergeAction",
-    "DeduplicationResult",
-    "MergeReport",
     "DeduplicationError",
+    "DeduplicationResult",
+    "MergeAction",
+    "MergeReport",
 ]
 
 
@@ -58,11 +58,11 @@ class Contact:
     """
 
     id: str
-    name: Optional[str]
-    email: Optional[str]
-    phone: Optional[str]
-    company: Optional[str]
-    address: Optional[str]
+    name: str | None
+    email: str | None
+    phone: str | None
+    company: str | None
+    address: str | None
     completeness_score: float
 
 
@@ -87,7 +87,7 @@ class MergeAction:
     """
 
     primary_id: str
-    merged_ids: List[str]
+    merged_ids: list[str]
     reason: str
     merged_contact: Contact
 
@@ -116,9 +116,9 @@ class DeduplicationResult:
     total_records: int
     unique_records: int
     duplicates_found: int
-    merge_actions: List[MergeAction] = field(default_factory=list)
-    deduplicated_contacts: List[Contact] = field(default_factory=list)
-    errors: List[str] = field(default_factory=list)
+    merge_actions: list[MergeAction] = field(default_factory=list)
+    deduplicated_contacts: list[Contact] = field(default_factory=list)
+    errors: list[str] = field(default_factory=list)
 
 
 @dataclass
@@ -145,11 +145,11 @@ class MergeReport:
     total_records: int
     unique_records: int
     duplicates_found: int
-    merge_actions: List[MergeAction] = field(default_factory=list)
-    validation_errors: List[str] = field(default_factory=list)
+    merge_actions: list[MergeAction] = field(default_factory=list)
+    validation_errors: list[str] = field(default_factory=list)
 
     @classmethod
-    def from_result(cls, result: DeduplicationResult) -> "MergeReport":
+    def from_result(cls, result: DeduplicationResult) -> MergeReport:
         """Build a :class:`MergeReport` from a :class:`DeduplicationResult`.
 
         Args:
@@ -167,7 +167,7 @@ class MergeReport:
             validation_errors=result.errors,
         )
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Return a JSON-serializable ``dict`` representation.
 
         Returns:
