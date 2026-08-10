@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "contact-deduplicator"
-version = "1.0.0"
+version = "1.0.2"
 description = "Detect and merge duplicate contact records in CSV files using fuzzy name matching and validated email/phone comparison."
 readme = "README.md"
 license = "MIT"
