@@ -10,7 +10,7 @@ the single exception type the package raises.
 from __future__ import annotations
 
 from dataclasses import asdict, dataclass, field
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import Any
 
 __all__ = [
@@ -159,7 +159,7 @@ class MergeReport:
             A new ``MergeReport`` timestamped at the moment of the call.
         """
         return cls(
-            timestamp=datetime.now(timezone.utc).isoformat(),
+            timestamp=datetime.now(UTC).isoformat(),
             total_records=result.total_records,
             unique_records=result.unique_records,
             duplicates_found=result.duplicates_found,
